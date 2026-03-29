@@ -1,6 +1,7 @@
-package org.example.domain.denuncia.lixo;
+package org.example.domain.denuncia.lixo.repository;
 
 import org.example.domain.abstraction.DefaultRepository;
+import org.example.domain.denuncia.lixo.entity.Lixo;
 
 public class LixoRepository implements DefaultRepository<Lixo> {
     @Override

@@ -1,6 +1,6 @@
-package org.example.domain.denuncia.lixo;
+package org.example.domain.denuncia.lixo.entity;
 
-import org.example.domain.abstraction.Denuncia;
+import org.example.domain.denuncia.abstraction.Denuncia;
 
 public class Lixo extends Denuncia {
 

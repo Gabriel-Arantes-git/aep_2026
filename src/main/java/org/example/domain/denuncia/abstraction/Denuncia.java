@@ -1,6 +1,7 @@
-package org.example.domain.abstraction;
+package org.example.domain.denuncia.abstraction;
 
-import org.example.domain.usuario.model.Usuario;
+import org.example.domain.abstraction.DefaultEntity;
+import org.example.domain.usuario.entity.Usuario;
 
 import java.time.LocalDateTime;
 
