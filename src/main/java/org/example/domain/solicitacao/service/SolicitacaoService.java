@@ -32,7 +32,6 @@ public class SolicitacaoService extends DefaultService<Solicitacao, SolicitacaoR
     @Override
     public Solicitacao salvar(Solicitacao entity) {
         validarCamposObrigatorios(entity);
-        validarLimiteAbertasPorUsuario(entity);
 
         entity.setProtocolo(gerarProtocolo());
         entity.setStatus(StatusSolicitacao.ABERTO);
@@ -89,8 +88,7 @@ public class SolicitacaoService extends DefaultService<Solicitacao, SolicitacaoR
         solicitacao.setStatus(novoStatus);
         atualizar(solicitacao);
 
-        String justificativaAtraso = resolverJustificativaAtraso(solicitacao, comentario);
-        registrarMovimentacao(solicitacao, statusAnterior, novoStatus, comentario, responsavel, justificativaAtraso);
+        registrarMovimentacao(solicitacao, statusAnterior, novoStatus, comentario, responsavel);
         logRepository.save(new LogAcao(responsavel, "MOVER_STATUS", "solicitacao", solicitacao.getId(),
                 statusAnterior + " -> " + novoStatus));
     }
@@ -106,21 +104,9 @@ public class SolicitacaoService extends DefaultService<Solicitacao, SolicitacaoR
         return LocalDateTime.now().plusHours(sla.getPrazoHoras());
     }
 
-    private String resolverJustificativaAtraso(Solicitacao solicitacao, String comentario) {
-        if (solicitacao.getPrazoAlvo() != null && LocalDateTime.now().isAfter(solicitacao.getPrazoAlvo())) {
-            return comentario;
-        }
-        return null;
-    }
-
-    private void registrarMovimentacao(Solicitacao solicitacao, StatusSolicitacao anterior,
-                                       StatusSolicitacao novo, String comentario, Usuario responsavel) {
-        registrarMovimentacao(solicitacao, anterior, novo, comentario, responsavel, null);
-    }
-
     private void registrarMovimentacao(Solicitacao solicitacao, StatusSolicitacao anterior,
                                        StatusSolicitacao novo, String comentario,
-                                       Usuario responsavel, String justificativaAtraso) {
+                                       Usuario responsavel) {
         Movimentacao m = new Movimentacao();
         m.setSolicitacao(solicitacao);
         m.setStatusAnterior(anterior);
@@ -128,7 +114,6 @@ public class SolicitacaoService extends DefaultService<Solicitacao, SolicitacaoR
         m.setComentario(comentario);
         m.setResponsavel(responsavel);
         m.setDataMovimentacao(LocalDateTime.now());
-        m.setJustificativaAtraso(justificativaAtraso);
         movimentacaoRepository.save(m);
     }
 
@@ -151,17 +136,6 @@ public class SolicitacaoService extends DefaultService<Solicitacao, SolicitacaoR
         if (entity.getBairro() == null || entity.getBairro().isBlank()) {
             throw new IllegalArgumentException("Bairro é obrigatório.");
         }
-        if (entity.isAnonimo() && entity.getDescricao().length() < 50) {
-            throw new IllegalArgumentException("Denúncias anônimas exigem descrição com pelo menos 50 caracteres.");
-        }
     }
 
-    private void validarLimiteAbertasPorUsuario(Solicitacao entity) {
-        if (!entity.isAnonimo() && entity.getUsuario() != null) {
-            int abertas = solicitacaoRepository.countAbertasByUsuario(entity.getUsuario().getId());
-            if (abertas >= 5) {
-                throw new IllegalStateException("Limite de 5 solicitações abertas atingido.");
-            }
-        }
-    }
 }
