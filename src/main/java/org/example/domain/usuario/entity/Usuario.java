@@ -28,27 +28,67 @@ public class Usuario extends DefaultEntity {
         this.ativo = true;
     }
 
-    public String getNome()                    { return nome; }
-    public void   setNome(String nome)         { this.nome = nome; }
+    public String getNome() {
+        return nome;
+    }
 
-    public String getEmail()                   { return email; }
-    public void   setEmail(String email)       { this.email = email; }
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
 
-    public String getCpf()                     { return cpf; }
-    public void   setCpf(String cpf)           { this.cpf = cpf; }
+    public String getEmail() {
+        return email;
+    }
 
-    public String getTelefone()                        { return telefone; }
-    public void   setTelefone(String telefone)         { this.telefone = telefone; }
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
-    public String getSenhaHash()                       { return senhaHash; }
-    public void   setSenhaHash(String senhaHash)       { this.senhaHash = senhaHash; }
+    public String getCpf() {
+        return cpf;
+    }
 
-    public PerfilUsuario getPerfil()                   { return perfil; }
-    public void          setPerfil(PerfilUsuario p)    { this.perfil = p; }
+    public void setCpf(String cpf) {
+        this.cpf = cpf;
+    }
 
-    public boolean isAtivo()                   { return ativo; }
-    public void    setAtivo(boolean ativo)     { this.ativo = ativo; }
+    public String getTelefone() {
+        return telefone;
+    }
 
-    public LocalDateTime getDataCadastro()                         { return dataCadastro; }
-    public void          setDataCadastro(LocalDateTime dt)         { this.dataCadastro = dt; }
+    public void setTelefone(String telefone) {
+        this.telefone = telefone;
+    }
+
+    public String getSenhaHash() {
+        return senhaHash;
+    }
+
+    public void setSenhaHash(String senhaHash) {
+        this.senhaHash = senhaHash;
+    }
+
+    public PerfilUsuario getPerfil() {
+        return perfil;
+    }
+
+    public void setPerfil(PerfilUsuario perfil) {
+        this.perfil = perfil;
+    }
+
+    public boolean isAtivo() {
+        return ativo;
+    }
+
+    public void setAtivo(boolean ativo) {
+        this.ativo = ativo;
+    }
+
+    public LocalDateTime getDataCadastro() {
+        return dataCadastro;
+    }
+
+    public void setDataCadastro(LocalDateTime dataCadastro) {
+        this.dataCadastro = dataCadastro;
+    }
 }
