@@ -169,11 +169,6 @@ DefaultService<T, R>
 ---
 
 ## Execução
-
-```bash
-mvn compile exec:java -Dexec.mainClass="org.example.Main"
-```
-
 O banco é criado automaticamente em `./data/observacao_db` na primeira execução.
 
 **Usuários padrão criados na inicialização:**
