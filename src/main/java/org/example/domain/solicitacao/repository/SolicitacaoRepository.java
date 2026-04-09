@@ -138,20 +138,6 @@ public class SolicitacaoRepository implements DefaultRepository<Solicitacao> {
         }
     }
 
-    public int countAbertasByUsuario(Long usuarioId) {
-        String sql = "SELECT COUNT(*) FROM solicitacao WHERE usuario_id = ? AND status NOT IN ('RESOLVIDO', 'ENCERRADO')";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setLong(1, usuarioId);
-            ResultSet rs = ps.executeQuery();
-            return rs.next() ? rs.getInt(1) : 0;
-
-        } catch (SQLException e) {
-            throw new RuntimeException("Erro ao contar solicitações abertas.", e);
-        }
-    }
-
     @Override
     public void delete(Solicitacao entity) {
         throw new UnsupportedOperationException("Solicitações não são removidas, apenas encerradas.");

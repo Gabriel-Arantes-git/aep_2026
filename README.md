@@ -167,7 +167,6 @@ DefaultService<T, R>
 ## Regras de Negócio Relevantes
 
 - Denúncias anônimas exigem descrição com no mínimo 50 caracteres
-- Cidadão identificado não pode ter mais de 5 solicitações abertas simultaneamente
 - Transições de status seguem fluxo fixo — voltar status não é permitido
 - Comentário obrigatório em toda movimentação
 - Justificativa de atraso obrigatória quando `prazo_alvo` está vencido
