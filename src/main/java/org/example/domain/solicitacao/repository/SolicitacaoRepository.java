@@ -1,13 +1,12 @@
 package org.example.domain.solicitacao.repository;
 
 import org.example.domain.abstraction.DefaultRepository;
-import org.example.domain.categoria.entity.Categoria;
+import org.example.domain.categoria.repository.CategoriaRepository;
+import org.example.domain.departamento.repository.DepartamentoRepository;
 import org.example.domain.enums.Prioridade;
 import org.example.domain.enums.StatusSolicitacao;
 import org.example.domain.solicitacao.entity.Solicitacao;
-import org.example.domain.usuario.entity.Usuario;
 import org.example.domain.usuario.repository.UsuarioRepository;
-import org.example.domain.categoria.repository.CategoriaRepository;
 import org.example.infra.DatabaseConnection;
 
 import java.sql.*;
@@ -16,8 +15,9 @@ import java.util.List;
 
 public class SolicitacaoRepository implements DefaultRepository<Solicitacao> {
 
-    private final UsuarioRepository usuarioRepository   = new UsuarioRepository();
-    private final CategoriaRepository categoriaRepository = new CategoriaRepository();
+    private final UsuarioRepository usuarioRepository       = new UsuarioRepository();
+    private final CategoriaRepository categoriaRepository   = new CategoriaRepository();
+    private final DepartamentoRepository departamentoRepository = new DepartamentoRepository();
 
     @Override
     public Solicitacao save(Solicitacao entity) {
@@ -25,8 +25,8 @@ public class SolicitacaoRepository implements DefaultRepository<Solicitacao> {
             INSERT INTO solicitacao
                 (protocolo, categoria_id, descricao, bairro, logradouro, referencia,
                  anonimo, usuario_id, nome_contato, email_contato, prioridade, status,
-                 data_abertura, prazo_alvo, atendente_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 data_abertura, prazo_alvo, atendente_id, departamento_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """;
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -46,6 +46,7 @@ public class SolicitacaoRepository implements DefaultRepository<Solicitacao> {
             ps.setTimestamp(13, Timestamp.valueOf(entity.getDataAbertura()));
             ps.setObject(14, entity.getPrazoAlvo() != null ? Timestamp.valueOf(entity.getPrazoAlvo()) : null);
             ps.setObject(15, entity.getAtendente() != null ? entity.getAtendente().getId() : null);
+            ps.setObject(16, entity.getDepartamento() != null ? entity.getDepartamento().getId() : null);
             ps.executeUpdate();
 
             ResultSet keys = ps.getGeneratedKeys();
@@ -62,7 +63,7 @@ public class SolicitacaoRepository implements DefaultRepository<Solicitacao> {
         String sql = """
             UPDATE solicitacao SET
                 status = ?, prioridade = ?, prazo_alvo = ?,
-                data_encerramento = ?, atendente_id = ?
+                data_encerramento = ?, atendente_id = ?, departamento_id = ?
             WHERE id = ?
             """;
         try (Connection conn = DatabaseConnection.getConnection();
@@ -73,7 +74,8 @@ public class SolicitacaoRepository implements DefaultRepository<Solicitacao> {
             ps.setObject(3, entity.getPrazoAlvo() != null ? Timestamp.valueOf(entity.getPrazoAlvo()) : null);
             ps.setObject(4, entity.getDataEncerramento() != null ? Timestamp.valueOf(entity.getDataEncerramento()) : null);
             ps.setObject(5, entity.getAtendente() != null ? entity.getAtendente().getId() : null);
-            ps.setLong(6, entity.getId());
+            ps.setObject(6, entity.getDepartamento() != null ? entity.getDepartamento().getId() : null);
+            ps.setLong(7, entity.getId());
             ps.executeUpdate();
             return entity;
 
@@ -185,14 +187,16 @@ public class SolicitacaoRepository implements DefaultRepository<Solicitacao> {
         Timestamp dataEncerramento = rs.getTimestamp("data_encerramento");
         if (dataEncerramento != null) s.setDataEncerramento(dataEncerramento.toLocalDateTime());
 
-        long categoriaId = rs.getLong("categoria_id");
-        s.setCategoria(categoriaRepository.findById(categoriaId));
+        s.setCategoria(categoriaRepository.findById(rs.getLong("categoria_id")));
 
         long usuarioId = rs.getLong("usuario_id");
         if (!rs.wasNull()) s.setUsuario(usuarioRepository.findById(usuarioId));
 
         long atendenteId = rs.getLong("atendente_id");
         if (!rs.wasNull()) s.setAtendente(usuarioRepository.findById(atendenteId));
+
+        long departamentoId = rs.getLong("departamento_id");
+        if (!rs.wasNull()) s.setDepartamento(departamentoRepository.findById(departamentoId));
 
         return s;
     }

@@ -13,7 +13,7 @@ Sistema CLI para registro e acompanhamento de denúncias de problemas ambientais
 
 **Atendente**
 - Visualização da fila por status
-- Triagem com definição de prioridade (calcula prazo automaticamente via SLA)
+- Triagem com definição de prioridade e encaminhamento para departamento destino (calcula prazo automaticamente via SLA)
 - Atualização de status com comentário obrigatório
 
 **Gestor**
@@ -95,6 +95,11 @@ src/main/java/org/example/
     │   ├── repository/CategoriaRepository
     │   └── service/CategoriaService
     │
+    ├── departamento/
+    │   ├── entity/DepartamentoDestino
+    │   ├── repository/DepartamentoRepository
+    │   └── service/DepartamentoService
+    │
     ├── sla/
     │   ├── entity/SlaConfig
     │   └── repository/SlaRepository
@@ -140,8 +145,22 @@ DefaultService<T, R>
 | `categoria`   | Tipos de problema ambiental                   |
 | `sla_config`  | Prazo-alvo por prioridade                     |
 | `solicitacao` | Denúncias — entidade central                  |
-| `movimentacao`| Histórico de mudanças de status               |
-| `log_acao`    | Auditoria de operações críticas               |
+| `movimentacao`        | Histórico de mudanças de status               |
+| `departamento_destino`| Órgãos/departamentos para encaminhamento      |
+| `log_acao`            | Auditoria de operações críticas               |
+
+---
+
+## Departamentos Destino (padrão)
+
+| Departamento         | Responsabilidade                        |
+|----------------------|-----------------------------------------|
+| Prefeitura Municipal | Infraestrutura urbana geral             |
+| COPEL                | Energia elétrica                        |
+| SANEPAR              | Saneamento básico                       |
+| COMPAGAS             | Distribuição de gás                     |
+| SESP                 | Segurança pública                       |
+| SEMA                 | Meio ambiente                           |
 
 ---
 
