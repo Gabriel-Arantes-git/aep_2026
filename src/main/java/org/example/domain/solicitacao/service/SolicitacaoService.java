@@ -1,6 +1,7 @@
 package org.example.domain.solicitacao.service;
 
 import org.example.domain.abstraction.DefaultService;
+import org.example.domain.departamento.entity.DepartamentoDestino;
 import org.example.domain.enums.Prioridade;
 import org.example.domain.enums.StatusSolicitacao;
 import org.example.domain.log.entity.LogAcao;
@@ -63,8 +64,13 @@ public class SolicitacaoService extends DefaultService<Solicitacao, SolicitacaoR
         return movimentacaoRepository.findBySolicitacao(solicitacaoId);
     }
 
+    public List<org.example.domain.log.entity.LogAcao> buscarLogs(Long solicitacaoId) {
+        return logRepository.findBySolicitacao(solicitacaoId);
+    }
+
     public void moverStatus(Solicitacao solicitacao, StatusSolicitacao novoStatus,
-                            Prioridade prioridade, String comentario, Usuario responsavel) {
+                            Prioridade prioridade, DepartamentoDestino departamento,
+                            String comentario, Usuario responsavel) {
         if (!solicitacao.getStatus().podeMoverPara(novoStatus)) {
             throw new IllegalStateException(
                 "Transição inválida: " + solicitacao.getStatus() + " → " + novoStatus);
@@ -75,10 +81,13 @@ public class SolicitacaoService extends DefaultService<Solicitacao, SolicitacaoR
 
         StatusSolicitacao statusAnterior = solicitacao.getStatus();
 
-        if (novoStatus == StatusSolicitacao.TRIAGEM && prioridade != null) {
+        if (novoStatus == StatusSolicitacao.TRIAGEM) {
+            if (prioridade == null)    throw new IllegalArgumentException("Prioridade é obrigatória na triagem.");
+            if (departamento == null)  throw new IllegalArgumentException("Departamento destino é obrigatório na triagem.");
             solicitacao.setPrioridade(prioridade);
             solicitacao.setPrazoAlvo(calcularPrazo(prioridade));
             solicitacao.setAtendente(responsavel);
+            solicitacao.setDepartamento(departamento);
         }
 
         if (novoStatus == StatusSolicitacao.ENCERRADO || novoStatus == StatusSolicitacao.RESOLVIDO) {
@@ -95,7 +104,7 @@ public class SolicitacaoService extends DefaultService<Solicitacao, SolicitacaoR
 
     public void moverStatus(Solicitacao solicitacao, StatusSolicitacao novoStatus,
                             String comentario, Usuario responsavel) {
-        moverStatus(solicitacao, novoStatus, null, comentario, responsavel);
+        moverStatus(solicitacao, novoStatus, null, null, comentario, responsavel);
     }
 
     private LocalDateTime calcularPrazo(Prioridade prioridade) {

@@ -3,9 +3,12 @@ package org.example.ui;
 import org.example.auth.AutenticacaoService;
 import org.example.domain.categoria.entity.Categoria;
 import org.example.domain.categoria.service.CategoriaService;
+import org.example.domain.departamento.entity.DepartamentoDestino;
+import org.example.domain.departamento.service.DepartamentoService;
 import org.example.domain.enums.PerfilUsuario;
 import org.example.domain.enums.Prioridade;
 import org.example.domain.enums.StatusSolicitacao;
+import org.example.domain.log.entity.LogAcao;
 import org.example.domain.solicitacao.entity.Movimentacao;
 import org.example.domain.solicitacao.entity.Solicitacao;
 import org.example.domain.solicitacao.service.SolicitacaoService;
@@ -17,11 +20,12 @@ import java.util.Scanner;
 
 public class TerminalInterface {
 
-    private static final Scanner scanner = new Scanner(System.in);
-    private static final AutenticacaoService auth = new AutenticacaoService();
-    private static final UsuarioService usuarioService = new UsuarioService();
-    private static final SolicitacaoService solicitacaoService = new SolicitacaoService();
-    private static final CategoriaService categoriaService = new CategoriaService();
+    private static final Scanner scanner                         = new Scanner(System.in);
+    private static final AutenticacaoService auth                = new AutenticacaoService();
+    private static final UsuarioService usuarioService           = new UsuarioService();
+    private static final SolicitacaoService solicitacaoService   = new SolicitacaoService();
+    private static final CategoriaService categoriaService       = new CategoriaService();
+    private static final DepartamentoService departamentoService = new DepartamentoService();
 
     public static void telaInicial() {
         while (true) {
@@ -221,6 +225,7 @@ public class TerminalInterface {
             System.out.println("[3] Ver fila (EM_EXECUCAO)");
             System.out.println("[4] Assumir solicitação (triagem)");
             System.out.println("[5] Atualizar status");
+            System.out.println("[6] Ver detalhes de solicitação");
             System.out.println("[0] Sair");
             String opcao = scanner.nextLine().trim();
 
@@ -230,6 +235,7 @@ public class TerminalInterface {
                 case "3" -> listarPorStatus(StatusSolicitacao.EM_EXECUCAO);
                 case "4" -> assumirSolicitacao(atendente);
                 case "5" -> atualizarStatus(atendente);
+                case "6" -> verDetalhesSolicitacao();
                 case "0" -> { auth.logout(); return; }
                 default  -> System.out.println("Opção inválida.");
             }
@@ -244,7 +250,8 @@ public class TerminalInterface {
             Solicitacao s = solicitacaoService.buscarPorProtocolo(protocolo);
             imprimirSolicitacao(s);
 
-            System.out.println("Prioridade: [1] BAIXA  [2] MEDIA  [3] ALTA  [4] CRITICA");
+            System.out.println("\nPrioridade:");
+            System.out.println("[1] BAIXA  [2] MEDIA  [3] ALTA  [4] CRITICA");
             Prioridade prioridade = switch (scanner.nextLine().trim()) {
                 case "1" -> Prioridade.BAIXA;
                 case "2" -> Prioridade.MEDIA;
@@ -253,11 +260,27 @@ public class TerminalInterface {
                 default  -> throw new IllegalArgumentException("Prioridade inválida.");
             };
 
+            List<DepartamentoDestino> departamentos = departamentoService.listarAtivos();
+            System.out.println("\nDepartamento destino:");
+            for (int i = 0; i < departamentos.size(); i++) {
+                System.out.printf("[%d] %s%n", i + 1, departamentos.get(i).getNome());
+            }
+            System.out.print("Departamento: ");
+            int idx;
+            try {
+                idx = Integer.parseInt(scanner.nextLine().trim()) - 1;
+                if (idx < 0 || idx >= departamentos.size()) throw new NumberFormatException();
+            } catch (NumberFormatException e) {
+                System.out.println("Departamento inválido.");
+                return;
+            }
+            DepartamentoDestino departamento = departamentos.get(idx);
+
             System.out.print("Comentário: ");
             String comentario = scanner.nextLine().trim();
 
-            solicitacaoService.moverStatus(s, StatusSolicitacao.TRIAGEM, prioridade, comentario, atendente);
-            System.out.println("Solicitação assumida. Prazo alvo definido.");
+            solicitacaoService.moverStatus(s, StatusSolicitacao.TRIAGEM, prioridade, departamento, comentario, atendente);
+            System.out.println("Solicitação encaminhada para " + departamento.getNome() + ". Prazo alvo definido.");
         } catch (Exception e) {
             System.out.println("Erro: " + e.getMessage());
         }
@@ -290,14 +313,13 @@ public class TerminalInterface {
         }
     }
 
-    // ------------------------------------------------------------------ Gestor
-
     private static void menuGestor(Usuario gestor) {
         while (true) {
             System.out.println("\n--- Gestor: " + gestor.getNome() + " ---");
             System.out.println("[1] Painel geral");
             System.out.println("[2] Ver fila por status");
             System.out.println("[3] Atualizar status");
+            System.out.println("[4] Ver detalhes de solicitação");
             System.out.println("[0] Sair");
             String opcao = scanner.nextLine().trim();
 
@@ -305,6 +327,7 @@ public class TerminalInterface {
                 case "1" -> painelGeral();
                 case "2" -> selecionarStatusEListar();
                 case "3" -> atualizarStatus(gestor);
+                case "4" -> verDetalhesSolicitacao();
                 case "0" -> { auth.logout(); return; }
                 default  -> System.out.println("Opção inválida.");
             }
@@ -357,6 +380,51 @@ public class TerminalInterface {
         }
     }
 
+    private static void verDetalhesSolicitacao() {
+        System.out.print("Protocolo: ");
+        String protocolo = scanner.nextLine().trim().toUpperCase();
+
+        try {
+            Solicitacao s = solicitacaoService.buscarPorProtocolo(protocolo);
+            imprimirSolicitacao(s);
+
+            List<Movimentacao> historico = solicitacaoService.buscarHistorico(s.getId());
+            if (!historico.isEmpty()) {
+                System.out.println("\n--- Histórico de movimentações ---");
+                for (Movimentacao m : historico) {
+                    System.out.printf("[%s] %s → %s | %s%n",
+                            m.getDataMovimentacao().toLocalDate(),
+                            m.getStatusAnterior() != null ? m.getStatusAnterior() : "-",
+                            m.getStatusNovo(),
+                            m.getComentario());
+                    if (m.getJustificativaAtraso() != null) {
+                        System.out.println("  Justificativa de atraso: " + m.getJustificativaAtraso());
+                    }
+                }
+            }
+
+            System.out.print("\nVer logs de auditoria? [s/n]: ");
+            if (scanner.nextLine().trim().equalsIgnoreCase("s")) {
+                List<LogAcao> logs = solicitacaoService.buscarLogs(s.getId());
+                if (logs.isEmpty()) {
+                    System.out.println("Nenhum log registrado.");
+                } else {
+                    System.out.println("\n--- Logs de auditoria ---");
+                    for (LogAcao log : logs) {
+                        String autor = log.getUsuario() != null ? log.getUsuario().getEmail() : "sistema";
+                        System.out.printf("[%s] %s — %s | por: %s%n",
+                                log.getDataAcao() != null ? log.getDataAcao().toLocalDate() : "-",
+                                log.getAcao(),
+                                log.getDetalhes() != null ? log.getDetalhes() : "-",
+                                autor);
+                    }
+                }
+            }
+        } catch (IllegalArgumentException e) {
+            System.out.println("Erro: " + e.getMessage());
+        }
+    }
+
     private static void imprimirSolicitacao(Solicitacao s) {
         System.out.println("\nProtocolo : " + s.getProtocolo());
         System.out.println("Categoria : " + s.getCategoria().getNome());
@@ -366,7 +434,11 @@ public class TerminalInterface {
         if (s.getLogradouro() != null) System.out.println("Logradouro: " + s.getLogradouro());
         System.out.println("Descrição : " + s.getDescricao());
         System.out.println("Aberta em : " + s.getDataAbertura().toLocalDate());
+        String abertoBy = s.isAnonimo() ? "Anônimo" : (s.getUsuario() != null ? s.getUsuario().getNome() + " (" + s.getUsuario().getEmail() + ")" : "Anônimo");
+        System.out.println("Aberto por: " + abertoBy);
         if (s.getPrazoAlvo() != null) System.out.println("Prazo alvo: " + s.getPrazoAlvo().toLocalDate());
-        if (s.getAtendente() != null) System.out.println("Atendente : " + s.getAtendente().getNome());
+        if (s.getAtendente() != null)    System.out.println("Atendente  : " + s.getAtendente().getNome());
+        if (s.getDepartamento() != null) System.out.println("Departamento alvo: " + s.getDepartamento().getNome());
+        else                             System.out.println("Departamento alvo: Não definido");
     }
 }

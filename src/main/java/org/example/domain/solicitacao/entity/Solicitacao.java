@@ -2,6 +2,7 @@ package org.example.domain.solicitacao.entity;
 
 import org.example.domain.abstraction.DefaultEntity;
 import org.example.domain.categoria.entity.Categoria;
+import org.example.domain.departamento.entity.DepartamentoDestino;
 import org.example.domain.enums.Prioridade;
 import org.example.domain.enums.StatusSolicitacao;
 import org.example.domain.usuario.entity.Usuario;
@@ -26,6 +27,7 @@ public class Solicitacao extends DefaultEntity {
     private LocalDateTime prazoAlvo;
     private LocalDateTime dataEncerramento;
     private Usuario atendente;
+    private DepartamentoDestino departamento;
 
     public Solicitacao() {}
 
@@ -155,5 +157,13 @@ public class Solicitacao extends DefaultEntity {
 
     public void setAtendente(Usuario atendente) {
         this.atendente = atendente;
+    }
+
+    public DepartamentoDestino getDepartamento() {
+        return departamento;
+    }
+
+    public void setDepartamento(DepartamentoDestino departamento) {
+        this.departamento = departamento;
     }
 }

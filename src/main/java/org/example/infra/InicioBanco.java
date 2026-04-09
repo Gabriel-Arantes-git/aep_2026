@@ -13,6 +13,7 @@ public class InicioBanco {
             criarTabelaUsuario(statement);
             criarTabelaCategoria(statement);
             criarTabelaSlaConfig(statement);
+            criarTabelaDepartamentoDestino(statement);
             criarTabelaSolicitacao(statement);
             criarTabelaMovimentacao(statement);
             criarTabelaLogAcao(statement);
@@ -62,6 +63,17 @@ public class InicioBanco {
             """);
     }
 
+    private static void criarTabelaDepartamentoDestino(Statement statement) throws SQLException {
+        statement.execute("""
+            CREATE TABLE IF NOT EXISTS departamento_destino (
+                id        BIGINT AUTO_INCREMENT PRIMARY KEY,
+                nome      VARCHAR(100) NOT NULL UNIQUE,
+                descricao VARCHAR(255),
+                ativo     BOOLEAN DEFAULT TRUE
+            )
+            """);
+    }
+
     private static void criarTabelaSolicitacao(Statement statement) throws SQLException {
         statement.execute("""
             CREATE TABLE IF NOT EXISTS solicitacao (
@@ -82,10 +94,12 @@ public class InicioBanco {
                 data_abertura TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 prazo_alvo TIMESTAMP,
                 data_encerramento TIMESTAMP,
-                atendente_id BIGINT,
-                CONSTRAINT fk_solicitacao_categoria FOREIGN KEY (categoria_id)  REFERENCES categoria(id),
-                CONSTRAINT fk_solicitacao_usuario   FOREIGN KEY (usuario_id)    REFERENCES usuario(id),
-                CONSTRAINT fk_solicitacao_atendente FOREIGN KEY (atendente_id)  REFERENCES usuario(id)
+                atendente_id      BIGINT,
+                departamento_id   BIGINT,
+                CONSTRAINT fk_solicitacao_categoria    FOREIGN KEY (categoria_id)    REFERENCES categoria(id),
+                CONSTRAINT fk_solicitacao_usuario      FOREIGN KEY (usuario_id)      REFERENCES usuario(id),
+                CONSTRAINT fk_solicitacao_atendente    FOREIGN KEY (atendente_id)    REFERENCES usuario(id),
+                CONSTRAINT fk_solicitacao_departamento FOREIGN KEY (departamento_id) REFERENCES departamento_destino(id)
             )
             """);
     }
@@ -125,6 +139,7 @@ public class InicioBanco {
     private static void inserirDadosIniciais(Statement statement) throws SQLException {
         inserirCategorias(statement);
         inserirSlaConfig(statement);
+        inserirDepartamentos(statement);
         inserirGestorPadrao(statement);
     }
 
@@ -166,11 +181,41 @@ public class InicioBanco {
             """);
     }
 
+    private static void inserirDepartamentos(Statement statement) throws SQLException {
+        statement.execute("""
+            MERGE INTO departamento_destino (nome, descricao, ativo) KEY(nome) VALUES
+                ('Prefeitura Municipal', 'Serviços gerais de infraestrutura urbana', TRUE)
+            """);
+        statement.execute("""
+            MERGE INTO departamento_destino (nome, descricao, ativo) KEY(nome) VALUES
+                ('COPEL', 'Companhia Paranaense de Energia Elétrica', TRUE)
+            """);
+        statement.execute("""
+            MERGE INTO departamento_destino (nome, descricao, ativo) KEY(nome) VALUES
+                ('SANEPAR', 'Companhia de Saneamento do Paraná', TRUE)
+            """);
+        statement.execute("""
+            MERGE INTO departamento_destino (nome, descricao, ativo) KEY(nome) VALUES
+                ('COMPAGAS', 'Companhia Paranaense de Gás', TRUE)
+            """);
+        statement.execute("""
+            MERGE INTO departamento_destino (nome, descricao, ativo) KEY(nome) VALUES
+                ('SESP', 'Secretaria de Estado da Segurança Pública', TRUE)
+            """);
+        statement.execute("""
+            MERGE INTO departamento_destino (nome, descricao, ativo) KEY(nome) VALUES
+                ('SEMA', 'Secretaria de Estado do Meio Ambiente', TRUE)
+            """);
+    }
+
     private static void inserirGestorPadrao(Statement statement) throws SQLException {
         statement.execute("""
-            MERGE INTO usuario (id, nome, email, cpf, senha_hash, perfil, ativo) KEY(id) VALUES
-                (1, 'Administrador', 'admin@aep.gov', '000.000.000-00', 'admin123', 'GESTOR', TRUE),
-                (2, 'Atendente', 'atendente@aep.gov', '111.111.111-11', 'atendente123', 'ATENDENTE', TRUE)
+            MERGE INTO usuario (nome, email, cpf, senha_hash, perfil, ativo) KEY(email) VALUES
+                ('Administrador', 'admin@aep.gov', '000.000.000-00', 'admin123', 'GESTOR', TRUE)
+            """);
+        statement.execute("""
+            MERGE INTO usuario (nome, email, cpf, senha_hash, perfil, ativo) KEY(email) VALUES
+                ('Atendente', 'atendente@aep.gov', '111.111.111-11', 'atendente123', 'ATENDENTE', TRUE)
             """);
     }
 }
