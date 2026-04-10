@@ -1,4 +1,4 @@
-# Sistema de Denúncias Ambientais — AEP 2026
+# Sistema de Denúncias Urbanas — AEP 2026
 
 Sistema CLI para registro e acompanhamento de denúncias de problemas urbanos e redirecionamento aos departamentos responsaveis, como descarte irregular de lixo, queimadas e falhas de manutenção.
 
