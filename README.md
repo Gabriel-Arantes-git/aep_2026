@@ -1,6 +1,6 @@
 # Sistema de Denúncias Ambientais — AEP 2026
 
-Sistema CLI para registro e acompanhamento de denúncias de problemas ambientais urbanos, como descarte irregular de lixo, queimadas e falhas de manutenção.
+Sistema CLI para registro e acompanhamento de denúncias de problemas urbanos e redirecionamento aos departamentos responsaveis, como descarte irregular de lixo, queimadas e falhas de manutenção.
 
 ---
 
@@ -167,7 +167,6 @@ DefaultService<T, R>
 - Denúncias anônimas exigem descrição com no mínimo 50 caracteres
 - Transições de status seguem fluxo fixo — voltar status não é permitido
 - Comentário obrigatório em toda movimentação
-- Justificativa de atraso obrigatória quando `prazo_alvo` está vencido
 - Solicitações nunca são deletadas — apenas encerradas
 
 ---
