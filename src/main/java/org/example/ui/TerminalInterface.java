@@ -136,9 +136,19 @@ public class TerminalInterface {
         System.out.print("Referência (opcional): ");
         String referencia = scanner.nextLine().trim();
 
-        int minDesc = anonimo ? 50 : 1;
-        System.out.printf("Descrição (mínimo %d caracteres): ", minDesc);
-        String descricao = scanner.nextLine().trim();
+        int minDesc = anonimo ? 50 : 20;
+
+        String descricao = "";
+
+        while(true) {
+            System.out.printf("Descrição (mínimo %d caracteres): ", minDesc);
+            descricao = scanner.nextLine().trim();
+
+            if(descricao.length() > minDesc){
+                break;
+            }
+            System.out.printf("A descrição deve ter no mínimo %d caracteres! \n", minDesc);
+        }
 
         Solicitacao s = new Solicitacao();
         s.setCategoria(categorias.get(idx));

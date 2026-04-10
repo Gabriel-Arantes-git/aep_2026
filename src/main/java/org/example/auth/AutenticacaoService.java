@@ -13,7 +13,7 @@ public class AutenticacaoService {
         Usuario usuario = usuarioRepository.findByEmail(email);
 
         if (usuario == null || !usuario.getSenhaHash().equals(senha)) {
-            throw new IllegalArgumentException("E-mail ou senha inválidos.");
+            throw new IllegalArgumentException("E-mail ou senha inválidos. \nLembre-se de se cadastrar primeiro (opção 4)");
         }
 
         usuarioAutenticado = usuario;
