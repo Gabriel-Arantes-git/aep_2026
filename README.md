@@ -32,8 +32,6 @@ ABERTO → TRIAGEM → EM_EXECUCAO → RESOLVIDO → ENCERRADO
                    (gestor pode encerrar direto da triagem)
 ```
 
-Toda transição exige comentário. Se o prazo SLA estiver vencido, exige também justificativa de atraso.
-
 ---
 
 ## SLA (Prazo por Prioridade)
